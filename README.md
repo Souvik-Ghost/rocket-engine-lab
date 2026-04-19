@@ -1,10 +1,10 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🚀 Rocket Engine Simulation Lab
 
-**A highly customizable Liquid Rocket Engine design suite and theoretical Antigravity propulsion simulator.**
+**A highly customizable Liquid Rocket Engine design suite & theoretical Antigravity propulsion simulator.**
 
-Built with **Next.js** · **FastAPI** · **NumPy** · **Recharts** · **Google Gemini AI**
+Built with **Next.js 16** · **FastAPI** · **NumPy** · **Recharts** · **Google Gemini AI**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -12,226 +12,194 @@ Built with **Next.js** · **FastAPI** · **NumPy** · **Recharts** · **Google G
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+[Quick Start](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [API Docs](#-api-reference) · [Contributing](#-contributing)
+
 </div>
 
 ---
 
 ## 📖 Overview
 
-The **Rocket Engine Simulation Lab** is a full-stack web application that lets you design, configure, and simulate rocket engines in real time. It features two distinct operating modes:
+A full-stack web application for designing, configuring, and simulating rocket engines in real time. Two operating modes cover both real-world and speculative propulsion research:
 
-| Mode | Description |
-|------|-------------|
-| **🔧 Traditional LRE** | Design liquid rocket engines using real thermodynamic equations — adjust propellant combinations, chamber pressures, expansion ratios, combustion cycles, and altitude to see how Isp, mass flow rate, and nozzle geometry change instantly. |
-| **🌀 Antigravity Research** | Explore theoretical quantum propulsion concepts — tune graviton flux, Casimir vacuum pressure, field intensity, spacetime permittivity, and power sources to model hypothetical lift forces and warp factors. |
+| Mode | What You Get |
+|:----:|:-------------|
+| 🔧 **Traditional LRE** | Design liquid rocket engines with real thermodynamic equations — adjust propellants, chamber pressure, expansion ratio, combustion cycle, and altitude. Watch Isp, mass flow, and nozzle geometry update instantly. |
+| 🌀 **Antigravity** | Explore theoretical quantum propulsion — tune graviton flux, Casimir pressure, field intensity, spacetime permittivity, and power sources to model hypothetical lift forces and warp factors. |
 
-An integrated **Google Gemini AI** assistant acts as a senior propulsion engineer, offering real-time design optimizations, material recommendations, and safety checklists.
-
----
-
-## ✨ Key Features
-
-### Highly Customizable Design Parameters
-
-**Traditional LRE Mode:**
-- **Propellant Selection** — LOX/RP-1, LH2/LOX, CH4/LOX, Hydrazine/NTO (each with unique γ, R, and combustion temperatures)
-- **Combustion Cycle** — Gas Generator vs. Staged Combustion (with Isp efficiency penalties)
-- **Target Thrust** — 100 N to 5,000 N
-- **Chamber Pressure** — 10 to 150 Bar
-- **Expansion Ratio** — 2 to 100
-- **Altitude** — 0 m (sea level) to 50,000 m (near-vacuum), dynamically altering ambient pressure
-
-**Antigravity Mode:**
-- **Field Geometry** — Toroidal, Spherical, or Cylindrical drive configurations
-- **Power Source** — Cold Fusion Array or Antimatter Plasma
-- **Graviton Flux** — 100 to 2,000 THz
-- **Field Intensity** — 0 to 5 Tesla
-- **Casimir Pressure** — 0 to 100 nN
-- **Spacetime Permittivity** — 0.1 to 2.0
-
-### Real-Time Simulation & Visualization
-- Live telemetry charts (thrust trace / graviton flux stability) powered by **Recharts**
-- Dynamic SVG engine cross-section that morphs as you adjust the expansion ratio
-- Animated quantum core visualizer with field geometry indicators
-
-### AI-Powered Engineering Assistant
-- **Design Optimization** — Get 3 targeted improvements for your current configuration
-- **Theoretical Materials** — AI-suggested alloys and composites based on thermal/field loads
-- **Free-form Chat** — Ask any propulsion engineering question in context
+An integrated **Google Gemini AI** assistant provides real-time design optimizations, material recommendations, and safety checklists — acting as your on-demand senior propulsion engineer.
 
 ---
 
-## 🏗️ Architecture
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔧 Traditional LRE Parameters
+- **Propellant** — LOX/RP-1, LH2/LOX, CH4/LOX, Hydrazine/NTO
+- **Combustion Cycle** — Gas Generator · Staged Combustion
+- **Target Thrust** — 100 – 5,000 N
+- **Chamber Pressure** — 10 – 150 Bar
+- **Expansion Ratio** — 2 – 100
+- **Altitude** — 0 – 50,000 m
+
+</td>
+<td width="50%">
+
+### 🌀 Antigravity Parameters
+- **Field Geometry** — Toroidal · Spherical · Cylindrical
+- **Power Source** — Cold Fusion · Antimatter Plasma
+- **Graviton Flux** — 100 – 2,000 THz
+- **Field Intensity** — 0 – 5 T
+- **Casimir Pressure** — 0 – 100 nN
+- **Spacetime Permittivity** — 0.1 – 2.0
+
+</td>
+</tr>
+</table>
+
+**Real-Time Visualization** — Live Recharts telemetry, dynamic SVG cross-sections that morph with expansion ratio, animated quantum core visualizer.
+
+**AI Engineering Assistant** — Design optimization (3 targeted suggestions), theoretical materials advisor, free-form propulsion engineering chat.
+
+---
+
+## 🏗 Architecture
 
 ```
 rocket-engine-lab/
-├── backend/                  # Python FastAPI simulation server
-│   ├── main.py               # API endpoints & Gemini AI integration
-│   ├── models.py             # Pydantic request/response schemas
-│   └── simulation.py         # Thermodynamic & theoretical physics engine
-│
-├── frontend/                 # Next.js 16 dashboard UI
+├── backend/                    # Python FastAPI server
+│   ├── main.py                 # API routes & Gemini AI integration
+│   ├── models.py               # Pydantic schemas
+│   └── simulation.py           # Thermodynamic & quantum physics engine
+├── frontend/                   # Next.js 16 (App Router)
 │   └── src/
 │       ├── app/
-│       │   ├── page.tsx      # Main lab dashboard (client component)
-│       │   ├── layout.tsx    # Root layout with fonts
-│       │   └── globals.css   # Global styles & custom scrollbar
-│       └── lib/
-│           └── utils.ts      # Tailwind merge utility
-│
-├── Google Gemini.pdf         # Original design document & engineering report
-├── The-LRE-Engine-Lab.txt    # Original prototype source code
-├── .gitignore
+│       │   ├── page.tsx        # Main dashboard (client component)
+│       │   ├── layout.tsx      # Root layout
+│       │   └── globals.css     # Global styles
+│       └── lib/utils.ts        # Tailwind merge utility
+├── Google Gemini.pdf           # Design document & engineering report
+├── The-LRE-Engine-Lab.txt      # Original prototype source
 └── README.md
 ```
 
-### How It Works
-
 ```mermaid
 graph LR
-    A[Next.js Frontend<br/>localhost:3000] -->|POST /simulate/lre| B[FastAPI Backend<br/>localhost:8000]
+    A["Next.js Frontend\n:3000"] -->|POST /simulate/lre| B["FastAPI Backend\n:8000"]
     A -->|POST /simulate/ag| B
     A -->|POST /ai/command| B
-    B -->|NumPy + Math| C[Simulation Engine]
-    B -->|google-generativeai| D[Gemini AI API]
-    C -->|JSON results| A
+    B --> C["Simulation Engine\n(NumPy + Math)"]
+    B --> D["Google Gemini AI"]
+    C -->|JSON| A
     D -->|AI response| A
 ```
 
 ---
 
-## 🔬 Physics & Equations
+## 🔬 Physics
 
-### Traditional LRE — De Laval Nozzle Thermodynamics
+### De Laval Nozzle Thermodynamics (Traditional LRE)
 
-The backend computes engine performance using standard rocket propulsion equations:
+| Symbol | Equation | Description |
+|:------:|----------|-------------|
+| **c\*** | `√(R·Tc/γ) × (2/(γ+1))^(-(γ+1)/(2(γ-1)))` | Characteristic velocity |
+| **Cf** | `√((2γ²/(γ-1)) × (2/(γ+1))^((γ+1)/(γ-1)) × (1-(Pa/Pc)^((γ-1)/γ)))` | Thrust coefficient |
+| **Isp** | `(c* × Cf) / g₀` | Specific impulse |
+| **ṁ** | `F / (Isp × g₀)` | Mass flow rate |
+| **At** | `(ṁ × c*) / Pc` | Throat area |
+| **Pa** | `101325 × e^(-g·M·h / (R*·T))` | Altitude-adjusted ambient pressure |
 
-| Parameter | Equation |
-|-----------|----------|
-| **Characteristic Velocity (c\*)** | `c* = √(R·Tc/γ) × (2/(γ+1))^(-(γ+1)/(2(γ-1)))` |
-| **Thrust Coefficient (Cf)** | `Cf = √((2γ²/(γ-1)) × (2/(γ+1))^((γ+1)/(γ-1)) × (1 - (Pa/Pc)^((γ-1)/γ)))` |
-| **Specific Impulse (Isp)** | `Isp = (c* × Cf) / g₀` |
-| **Mass Flow Rate (ṁ)** | `ṁ = F / (Isp × g₀)` |
-| **Throat Area (At)** | `At = (ṁ × c*) / Pc` |
-| **Ambient Pressure (Pa)** | Barometric formula: `Pa = 101325 × e^(-g·M·h / (R*·T))` |
+> **Note:** Gas Generator cycle applies a **5% Isp penalty** vs. Staged Combustion.
 
-> Gas Generator cycle applies a 5% Isp penalty compared to Staged Combustion.
+Each propellant has unique thermodynamic constants:
 
-### Antigravity — Theoretical Quantum Fields
+| Propellant | γ | R (J/kg·K) | Tc (K) |
+|:----------:|:---:|:----------:|:------:|
+| LOX/RP-1 | 1.22 | 300 | 3500 |
+| LH2/LOX | 1.20 | 500 | 3300 |
+| CH4/LOX | 1.21 | 350 | 3400 |
+| N2H4/NTO | 1.24 | 310 | 3200 |
 
-| Parameter | Model |
-|-----------|-------|
-| **Lift Force** | `F_lift = Graviton_Flux × Field_Intensity × 1.5 × geometry_modifier × power_modifier` |
-| **Mass Reduction** | `ΔM = min(Intensity × Permittivity × 50 / 100, 99.9%)` |
-| **Warp Factor** | `W = log₁₀(Graviton_Flux) × Intensity × (Permittivity / 100)` |
+### Theoretical Quantum Fields (Antigravity)
 
----
-
-## 🛠️ Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-| Tool | Version | Download |
-|------|---------|----------|
-| **Python** | 3.10+ | [python.org](https://www.python.org/downloads/) |
-| **Node.js** | 18+ | [nodejs.org](https://nodejs.org/) |
-| **npm** | 9+ | Comes with Node.js |
-| **Git** | Latest | [git-scm.com](https://git-scm.com/) |
-
-**Optional:**
-- A [Google Gemini API Key](https://aistudio.google.com/apikey) — required only for the AI assistant features (design optimization, materials advisor, chat). The simulation itself works without it.
+| Output | Model |
+|--------|-------|
+| **Lift Force** | `Flux × Intensity × 1.5 × geometry_mod × power_mod` |
+| **Mass Reduction** | `min(Intensity × Permittivity × 0.5, 99.9%)` |
+| **Warp Factor** | `log₁₀(Flux) × Intensity × (Permittivity / 100)` |
 
 ---
 
 ## ⚡ Quick Start
 
-### 1. Clone the Repository
+### Prerequisites
+
+| Tool | Version | Link |
+|------|---------|------|
+| Python | 3.10+ | [python.org](https://www.python.org/downloads/) |
+| Node.js | 18+ | [nodejs.org](https://nodejs.org/) |
+| Git | Latest | [git-scm.com](https://git-scm.com/) |
+
+> **Optional:** A [Google Gemini API Key](https://aistudio.google.com/apikey) for the AI features. The simulation works without one.
+
+### 1 · Clone
 
 ```bash
 git clone https://github.com/Souvik-Ghost/rocket-engine-lab.git
 cd rocket-engine-lab
 ```
 
-### 2. Set Up the Python Backend
+### 2 · Backend (Terminal 1)
 
 ```bash
-# Navigate to backend
 cd backend
-
-# Create a virtual environment
 python -m venv venv
 
-# Activate the virtual environment
-# Windows (PowerShell):
+# Windows
 .\venv\Scripts\activate
-# macOS / Linux:
+# macOS / Linux
 source venv/bin/activate
 
-# Install dependencies
 pip install fastapi uvicorn pydantic numpy google-generativeai
-
-# Start the API server
 python main.py
 ```
 
-The backend will start on **http://localhost:8000**.  
-You can explore the auto-generated API docs at **http://localhost:8000/docs**.
+→ API running at **http://localhost:8000** &nbsp;|&nbsp; Swagger docs at **http://localhost:8000/docs**
 
-### 3. Set Up the Next.js Frontend
-
-Open a **new terminal** window:
+### 3 · Frontend (Terminal 2)
 
 ```bash
-# Navigate to frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-The frontend will start on **http://localhost:3000**.
-
-### 4. Open in Browser
-
-Navigate to **http://localhost:3000** — the simulation lab is ready to use!
+→ Dashboard live at **http://localhost:3000**
 
 ---
 
-## 🎮 Usage Guide
+## 🎮 Usage
 
-### Switching Modes
-Use the **Traditional / Antigravity** toggle at the top of the sidebar to switch between the two simulation engines. The entire UI — colors, parameters, charts, and visualizer — adapts dynamically.
-
-### Adjusting Parameters
-- Use the **dropdown selectors** to pick propellant types, combustion cycles, field geometries, and power sources.
-- Drag the **sliders** to adjust continuous parameters (thrust, pressure, altitude, flux, intensity, etc.).
-- The simulation **auto-recalculates** on every parameter change — no need to press a button.
-
-### Reading Results
-- The **header bar** displays key computed metrics (Isp, Mass Flow, Throat/Exit Radius for LRE; Lift Force, Mass Reduction, Warp Factor for AG).
-- The **Thrust Trace / Graviton Flux Stability** chart shows a simulated telemetry feed.
-- The **Engine Cross-Section / Gravitational Core** visualizer updates its geometry in real time.
-
-### Using the AI Assistant
-1. Paste your **Google Gemini API Key** into the input field at the top of the sidebar.
-2. Click **✨ Optimize Core** for 3 targeted design improvements.
-3. Click **✨ Theoretical Materials** for material/alloy recommendations.
-4. Type any question in the **chat input** at the bottom and press Enter.
+| Action | How |
+|--------|-----|
+| **Switch modes** | Click the **Traditional / Antigravity** toggle in the sidebar — UI, colors, charts, and parameters all adapt. |
+| **Tune parameters** | Use dropdowns for propellant/cycle/geometry and sliders for continuous values. Simulation **auto-recalculates** on every change. |
+| **Read results** | Header bar shows key metrics. Charts show simulated telemetry. SVG visualizer updates geometry live. |
+| **Use AI** | Paste your Gemini API key in the sidebar field. Then click ✨ **Optimize Core**, ✨ **Theoretical Materials**, or type a question in the chat. |
 
 ---
 
 ## 📡 API Reference
 
-All endpoints are served from `http://localhost:8000`.
+Base URL: `http://localhost:8000`
 
-### `POST /simulate/lre`
+<details>
+<summary><code>POST /simulate/lre</code> — Liquid Rocket Engine simulation</summary>
 
-Compute traditional liquid rocket engine performance.
-
-**Request Body:**
+**Request:**
 ```json
 {
   "propellant": "LOX/RP-1",
@@ -251,15 +219,15 @@ Compute traditional liquid rocket engine performance.
   "throat_radius_mm": 12.35,
   "exit_radius_mm": 42.78,
   "efficiency": 63.9,
-  "sim_data": [{"time": 0.0, "val1": 499.12, "val2": 20.34}, ...]
+  "sim_data": [{"time": 0.0, "val1": 499.12, "val2": 20.34}]
 }
 ```
+</details>
 
-### `POST /simulate/ag`
+<details>
+<summary><code>POST /simulate/ag</code> — Antigravity propulsion simulation</summary>
 
-Compute theoretical antigravity propulsion parameters.
-
-**Request Body:**
+**Request:**
 ```json
 {
   "field_geometry": "toroidal",
@@ -279,15 +247,15 @@ Compute theoretical antigravity propulsion parameters.
   "warp_factor": 0.023,
   "power_draw_kw": 1250,
   "efficiency": 0.9,
-  "sim_data": [{"time": 0.0, "val1": 449.21, "val2": 84.72}, ...]
+  "sim_data": [{"time": 0.0, "val1": 449.21, "val2": 84.72}]
 }
 ```
+</details>
 
-### `POST /ai/command`
+<details>
+<summary><code>POST /ai/command</code> — Gemini AI assistant</summary>
 
-Send a command or chat message to the Gemini AI assistant.
-
-**Request Body:**
+**Request:**
 ```json
 {
   "mode": "Traditional",
@@ -298,46 +266,46 @@ Send a command or chat message to the Gemini AI assistant.
 }
 ```
 
+**Commands:** `optimize` · `metallurgy` · `testplan` · `chat` (requires `message` field)
+</details>
+
 ---
 
 ## 🧰 Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | Next.js 16 (App Router) | React framework with server components |
-| **Styling** | Tailwind CSS 4 | Utility-first CSS with dynamic theming |
-| **Charts** | Recharts 3 | Responsive area/line charts for telemetry |
-| **Icons** | Lucide React | Consistent icon system |
-| **Backend** | FastAPI | High-performance async Python API |
-| **Math** | NumPy | Numerical simulation & noise generation |
-| **AI** | Google Gemini 2.5 Flash | Design optimization & engineering chat |
-| **Validation** | Pydantic | Request/response schema validation |
+| Layer | Tech | Role |
+|:-----:|------|------|
+| ⚛️ | **Next.js 16** | Frontend framework (App Router) |
+| 🎨 | **Tailwind CSS 4** | Utility-first styling with dynamic dual-theme |
+| 📊 | **Recharts 3** | Responsive telemetry charts |
+| 🎯 | **Lucide React** | Icon system |
+| ⚡ | **FastAPI** | Async Python API server |
+| 🔢 | **NumPy** | Numerical simulation & noise generation |
+| 🤖 | **Google Gemini 2.5 Flash** | AI design optimization & engineering chat |
+| ✅ | **Pydantic** | Request/response validation |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-propellant`)
-3. Commit your changes (`git commit -m 'Add N2O4/UDMH propellant support'`)
-4. Push to the branch (`git push origin feature/new-propellant`)
+1. Fork the repo
+2. Create a feature branch — `git checkout -b feature/new-propellant`
+3. Commit — `git commit -m 'Add N2O4/UDMH propellant'`
+4. Push — `git push origin feature/new-propellant`
 5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+Open source under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
-  
+
 **Built with 🔥 by [Souvik-Ghost](https://github.com/Souvik-Ghost)**
 
 *From physical jet engine experiments to digital propulsion simulations.*
 
 </div>
-]]>
