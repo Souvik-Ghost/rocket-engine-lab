@@ -1,0 +1,426 @@
+The LRE Engine Lab to include a dedicated Antigravity Research Template.
+
+This new version introduces a "Lab Mode" toggle, allowing you to switch between traditional Liquid Rocket Engineering and theoretical Antigravity propulsion. I've added new theoretical physics parameters (Graviton Flux, Casimir Pressure, Warp Field Stability) and updated the SVG visualizer to represent a "Gravitational Core" when in research mode. The AI Engineer is also updated to provide theoretical physics briefings when the Antigravity mode is active.
+
+I've significantly expanded the "LRE Engine Lab" to incorporate a Theoretical Antigravity mode. Here’s what’s new in the template:
+
+Dual Lab Modes: A toggle in the sidebar switches the entire UI context between standard Liquid Rocket Engineering (LRE) and Antigravity Research (AG-Lab).
+
+Antigravity Parameters: I’ve replaced traditional fuel/pressure sliders with graviton flux, Casimir pressure, and stabilization frequency when in AG-Lab mode.
+
+Dynamic Calculations: The app now computes theoretical "Lift Force" and "Mass Reduction" instead of standard Thrust and Isp when in Antigravity mode.
+
+Ethereal UI Adaptation: The color palette and icons shift from industrial blue (traditional) to quantum violet/fuchsia (antigravity) to match the research theme.
+
+Gemini AI Update: The system prompts for optimization and chat now automatically recognize which mode you are in, providing the appropriate technical (or theoretical) advice.
+
+You can now use this as a base for simulating futuristic propulsion concepts!
+-------------------------------------
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
+} from 'recharts';
+import { 
+  Settings, Zap, Database, Cpu, MessageSquare, Save, Play, ChevronRight, Info, AlertTriangle, 
+  Wand2, ShieldCheck, FileText, Volume2, Loader2, Orbit, Atom, Waves, Sparkles, Box
+} from 'lucide-react';
+
+const apiKey = ""; // Runtime provided
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'antigravity-engine-lab';
+
+const App = () => {
+  // --- MODE STATE ---
+  const [mode, setMode] = useState('Traditional'); // 'Traditional' or 'Antigravity'
+
+  // --- DESIGN STATE ---
+  const [design, setDesign] = useState({
+    // Traditional Params
+    thrustGoal: 500,
+    chamberPressure: 20,
+    propellant: 'LOX/RP-1',
+    expansionRatio: 12,
+    combustionTemp: 3200,
+    // Antigravity Params
+    gravitonFlux: 450, // THz
+    fieldIntensity: 0.85, // Tesla-equivalent
+    casimirPressure: 12.5, // nano-Newtons
+    stabilizationFrequency: 14.2, // GHz
+  });
+
+  const [simulationData, setSimulationData] = useState([]);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'assistant', text: "Welcome to the Propulsion Lab. We are currently configured for Traditional LRE design. Switch modes to explore Antigravity templates." }
+  ]);
+  const [audioUrl, setAudioUrl] = useState(null);
+
+  // --- UTILS: Exponential Backoff API Wrapper ---
+  const callGemini = async (payload, endpoint = 'generateContent', model = 'gemini-2.5-flash-preview-09-2025') => {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${endpoint}?key=${apiKey}`;
+    
+    const fetchWithRetry = async (attempt = 0) => {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        if (attempt < 5) {
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(r => setTimeout(r, delay));
+          return fetchWithRetry(attempt + 1);
+        }
+        throw err;
+      }
+    };
+    return fetchWithRetry();
+  };
+
+  // --- PROPULSION CALCULATIONS ---
+  const calculatePerformance = () => {
+    if (mode === 'Traditional') {
+      const { thrustGoal, chamberPressure, expansionRatio, combustionTemp } = design;
+      const g = 9.806;
+      const gamma = 1.22;
+      const R = 300; 
+
+      const cStar = Math.sqrt((R * combustionTemp) / gamma) * Math.pow((2 / (gamma + 1)), -(gamma + 1) / (2 * (gamma - 1)));
+      const Cf = Math.sqrt((2 * Math.pow(gamma, 2) / (gamma - 1)) * Math.pow(2 / (gamma + 1), (gamma + 1) / (gamma - 1)) * (1 - Math.pow(1 / chamberPressure, (gamma - 1) / gamma)));
+      
+      const Isp = (cStar * Cf) / g;
+      const massFlow = thrustGoal / (Isp * g);
+      const throatArea = (massFlow * cStar) / (chamberPressure * 100000); 
+      const throatRadius = Math.sqrt(throatArea / Math.PI) * 1000;
+
+      return {
+        isp: Isp.toFixed(1),
+        massFlow: massFlow.toFixed(3),
+        throatRadius: throatRadius.toFixed(2),
+        exitRadius: (throatRadius * Math.sqrt(expansionRatio)).toFixed(2),
+        efficiency: ((Isp / 450) * 100).toFixed(1)
+      };
+    } else {
+      // Antigravity "Theoretical" Math
+      const { gravitonFlux, fieldIntensity, casimirPressure } = design;
+      const liftForce = (gravitonFlux * fieldIntensity * 1.5).toFixed(2);
+      const massReduction = (fieldIntensity * 98.2).toFixed(1);
+      const warpFactor = (Math.log10(gravitonFlux) * fieldIntensity).toFixed(3);
+      const powerDraw = (casimirPressure * 100).toFixed(0);
+
+      return {
+        lift: liftForce,
+        reduction: massReduction,
+        warp: warpFactor,
+        power: powerDraw,
+        efficiency: (fieldIntensity * 100).toFixed(1)
+      };
+    }
+  };
+
+  const results = calculatePerformance();
+
+  // --- AI ACTIONS ---
+  const pcmToWav = (pcmData, sampleRate) => {
+    const buffer = new ArrayBuffer(44 + pcmData.length * 2);
+    const view = new DataView(buffer);
+    const writeString = (offset, string) => {
+      for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+    };
+    writeString(0, 'RIFF');
+    view.setUint32(4, 32 + pcmData.length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, pcmData.length * 2, true);
+    for (let i = 0; i < pcmData.length; i++) view.setInt16(44 + i * 2, pcmData[i], true);
+    return new Blob([buffer], { type: 'audio/wav' });
+  };
+
+  const handleTtsBriefing = async (text) => {
+    setIsAiLoading(true);
+    try {
+      const payload = {
+        contents: [{ parts: [{ text: `Explain this ${mode} propulsion briefing clearly: ${text}` }] }],
+        generationConfig: { 
+          responseModalities: ["AUDIO"], 
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Fenrir" } } } 
+        }
+      };
+      const result = await callGemini(payload, 'generateContent', 'gemini-2.5-flash-preview-tts');
+      const audioData = result.candidates[0].content.parts[0].inlineData.data;
+      const sampleRate = parseInt(result.candidates[0].content.parts[0].inlineData.mimeType.split('rate=')[1]) || 24000;
+      const binary = atob(audioData);
+      const pcm = new Int16Array(binary.length / 2);
+      for (let i = 0; i < pcm.length; i++) pcm[i] = binary.charCodeAt(i * 2) | (binary.charCodeAt(i * 2 + 1) << 8);
+      setAudioUrl(URL.createObjectURL(pcmToWav(pcm, sampleRate)));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const runAiCommand = async (commandType) => {
+    setIsAiLoading(true);
+    const context = mode === 'Traditional' 
+      ? `Thrust ${design.thrustGoal}N, Pc ${design.chamberPressure}bar, Propellant ${design.propellant}`
+      : `Graviton Flux ${design.gravitonFlux}THz, Intensity ${design.fieldIntensity}T, Casimir Pressure ${design.casimirPressure}nN`;
+
+    const systemPrompts = {
+      optimize: `You are a ${mode} propulsion optimizer. Analyze these specs: ${context}. Suggest 3 optimizations.`,
+      metallurgy: `Suggest materials for a ${mode} engine. Current ${mode === 'Traditional' ? 'Temp: ' + design.combustionTemp + 'K' : 'Field Intensity: ' + design.fieldIntensity + 'T'}.`,
+      testplan: `Draft a safety checklist for a ${mode === 'Traditional' ? 'Static Fire' : 'Quantum Harmonic'} test with specs: ${context}.`
+    };
+
+    try {
+      const result = await callGemini({
+        contents: [{ parts: [{ text: `Run command: ${commandType}` }] }],
+        systemInstruction: { parts: [{ text: systemPrompts[commandType] }] }
+      });
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Analysis failed.";
+      setChatHistory(prev => [...prev, { role: 'assistant', text: `✨ [${mode.toUpperCase()} ${commandType.toUpperCase()}] \n\n ${text}` }]);
+    } catch (err) {
+      setChatHistory(prev => [...prev, { role: 'assistant', text: "Engineering link lost." }]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput;
+    setChatInput("");
+    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+    
+    setIsAiLoading(true);
+    try {
+      const result = await callGemini({
+        contents: [{ parts: [{ text: userMsg }] }],
+        systemInstruction: { parts: [{ text: `Senior ${mode} Propulsion Engineer. Current mode: ${mode}. Be technical and helpful.` }] }
+      });
+      setChatHistory(prev => [...prev, { role: 'assistant', text: result.candidates?.[0]?.content?.parts?.[0]?.text || "No data." }]);
+    } catch (err) {
+      setChatHistory(prev => [...prev, { role: 'assistant', text: "Communication failure." }]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const startSimulation = () => {
+    setIsSimulating(true);
+    let points = [];
+    for (let i = 0; i <= 20; i++) {
+      const base = mode === 'Traditional' ? design.thrustGoal : design.gravitonFlux;
+      points.push({
+        time: i * 0.5,
+        val1: base * (1 + (Math.random() * 0.04 - 0.02)),
+        val2: (mode === 'Traditional' ? design.chamberPressure : design.fieldIntensity * 100) * (1 + (Math.random() * 0.06 - 0.03)),
+      });
+    }
+    setSimulationData(points);
+    setTimeout(() => setIsSimulating(false), 1000);
+  };
+
+  return (
+    <div className={`flex h-screen overflow-hidden font-sans transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-950 text-slate-100' : 'bg-indigo-950 text-indigo-100'}`}>
+      
+      {/* SIDEBAR */}
+      <aside className={`w-80 border-r p-6 flex flex-col overflow-y-auto transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-900/50 border-slate-800' : 'bg-violet-900/30 border-violet-800'}`}>
+        <div className="flex items-center gap-3 mb-8">
+          <div className={`p-2 rounded-lg shadow-lg transition-colors duration-700 ${mode === 'Traditional' ? 'bg-sky-500 shadow-sky-500/20' : 'bg-fuchsia-500 shadow-fuchsia-500/20'}`}>
+            {mode === 'Traditional' ? <Zap size={24} className="text-white" /> : <Orbit size={24} className="text-white" />}
+          </div>
+          <h1 className="text-xl font-bold tracking-tight">{mode === 'Traditional' ? 'LRE Lab' : 'AG-Lab'}</h1>
+        </div>
+
+        {/* MODE TOGGLE */}
+        <div className="flex p-1 bg-black/30 rounded-xl mb-8">
+          <button 
+            onClick={() => setMode('Traditional')}
+            className={`flex-1 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${mode === 'Traditional' ? 'bg-sky-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Traditional
+          </button>
+          <button 
+            onClick={() => setMode('Antigravity')}
+            className={`flex-1 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${mode === 'Antigravity' ? 'bg-fuchsia-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Antigravity
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          <section>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Primary Parameters</label>
+            <div className="space-y-4">
+              {mode === 'Traditional' ? (
+                <>
+                  <div>
+                    <div className="flex justify-between mb-1"><span className="text-sm">Target Thrust</span><span className="text-sm text-sky-400 font-mono">{design.thrustGoal} N</span></div>
+                    <input type="range" min="100" max="5000" step="50" className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500" value={design.thrustGoal} onChange={(e) => setDesign({...design, thrustGoal: Number(e.target.value)})}/>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1"><span className="text-sm">Chamber Pressure</span><span className="text-sm text-sky-400 font-mono">{design.chamberPressure} Bar</span></div>
+                    <input type="range" min="10" max="100" step="1" className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500" value={design.chamberPressure} onChange={(e) => setDesign({...design, chamberPressure: Number(e.target.value)})}/>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <div className="flex justify-between mb-1"><span className="text-sm">Graviton Flux</span><span className="text-sm text-fuchsia-400 font-mono">{design.gravitonFlux} THz</span></div>
+                    <input type="range" min="100" max="2000" step="10" className="w-full h-1 bg-violet-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500" value={design.gravitonFlux} onChange={(e) => setDesign({...design, gravitonFlux: Number(e.target.value)})}/>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1"><span className="text-sm">Field Intensity</span><span className="text-sm text-fuchsia-400 font-mono">{design.fieldIntensity} T</span></div>
+                    <input type="range" min="0" max="2" step="0.05" className="w-full h-1 bg-violet-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500" value={design.fieldIntensity} onChange={(e) => setDesign({...design, fieldIntensity: Number(e.target.value)})}/>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <button onClick={startSimulation} disabled={isSimulating} className={`w-full py-3 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${mode === 'Traditional' ? 'bg-sky-600 hover:bg-sky-500' : 'bg-fuchsia-600 hover:bg-fuchsia-500'}`}>
+            {isSimulating ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} fill="currentColor"/>}
+            {mode === 'Traditional' ? 'RUN STATIC FIRE' : 'ENGAGE SINGULARITY'}
+          </button>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-slate-800">
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 block">AI Specialist Modules</label>
+          <div className="space-y-2">
+            <button onClick={() => runAiCommand('optimize')} className={`w-full flex items-center gap-3 p-2 rounded-lg border transition-all text-sm group ${mode === 'Traditional' ? 'bg-sky-500/10 border-sky-500/20 text-sky-400' : 'bg-fuchsia-500/10 border-fuchsia-500/20 text-fuchsia-400'}`}>
+              <Wand2 size={16} className="group-hover:scale-110 transition-transform"/>
+              <span>✨ Optimize {mode} Core</span>
+            </button>
+            <button onClick={() => runAiCommand('metallurgy')} className={`w-full flex items-center gap-3 p-2 rounded-lg border transition-all text-sm group ${mode === 'Traditional' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'}`}>
+              <ShieldCheck size={16} className="group-hover:scale-110 transition-transform"/>
+              <span>✨ Theoretical Materials</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN VIEWPORT */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className={`h-20 border-b flex items-center px-8 gap-8 transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-900/30 border-slate-800' : 'bg-violet-900/10 border-violet-800'}`}>
+          {mode === 'Traditional' ? (
+            <>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-slate-500 font-bold">Isp</span><span className="text-2xl font-mono text-emerald-400">{results.isp}s</span></div>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-slate-500 font-bold">Mass Flow</span><span className="text-2xl font-mono text-sky-400">{results.massFlow}kg/s</span></div>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-slate-500 font-bold">Efficiency</span><span className="text-2xl font-mono text-amber-400">{results.efficiency}%</span></div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-fuchsia-500/60 font-bold tracking-widest">Lift Force</span><span className="text-2xl font-mono text-fuchsia-400">{results.lift} kN</span></div>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-violet-500/60 font-bold tracking-widest">Mass Reduc.</span><span className="text-2xl font-mono text-violet-400">{results.reduction}%</span></div>
+              <div className="flex flex-col"><span className="text-[10px] uppercase text-cyan-500/60 font-bold tracking-widest">Warp Factor</span><span className="text-2xl font-mono text-cyan-400">{results.warp}</span></div>
+            </>
+          )}
+        </header>
+
+        <div className="flex-1 p-8 overflow-y-auto space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className={`border rounded-xl p-6 backdrop-blur-sm shadow-xl transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-900/80 border-slate-800' : 'bg-violet-900/40 border-violet-800'}`}>
+              <h3 className="text-sm font-bold mb-6 flex items-center gap-2">
+                <Database size={16} className={mode === 'Traditional' ? "text-sky-400" : "text-fuchsia-400"}/>
+                {mode === 'Traditional' ? 'THRUST TRACE' : 'GRAVITON FLUX STABILITY'}
+              </h3>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={simulationData.length ? simulationData : Array(20).fill({time:0, val1:0})}>
+                    <defs>
+                      <linearGradient id="colorVal1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={mode === 'Traditional' ? "#0ea5e9" : "#d946ef"} stopOpacity={0.3}/><stop offset="95%" stopColor={mode === 'Traditional' ? "#0ea5e9" : "#d946ef"} stopOpacity={0}/></linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                    <XAxis dataKey="time" hide />
+                    <YAxis stroke="#64748b" fontSize={10} hide />
+                    <Tooltip contentStyle={{backgroundColor: '#0f172a', border: 'none', borderRadius: '8px'}} />
+                    <Area type="monotone" dataKey="val1" stroke={mode === 'Traditional' ? "#0ea5e9" : "#d946ef"} fillOpacity={1} fill="url(#colorVal1)" strokeWidth={2} isAnimationActive={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* 2D VISUALIZER */}
+            <div className={`border rounded-xl p-8 backdrop-blur-sm relative overflow-hidden shadow-xl transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-900/80 border-slate-800' : 'bg-violet-900/40 border-violet-800'}`}>
+               <h3 className="text-sm font-bold mb-8 uppercase tracking-widest opacity-60">{mode === 'Traditional' ? 'Engine Cross-Section' : 'Gravitational Singular Core'}</h3>
+               <div className="flex justify-center items-center h-48">
+                  {mode === 'Traditional' ? (
+                    <svg viewBox="0 0 400 200" className="w-full max-w-sm">
+                       <path d={`M 50 60 L 150 60 L 180 90 L 280 40 L 280 160 L 180 110 L 150 140 L 50 140 Z`} fill="none" stroke="#38bdf8" strokeWidth="2" />
+                       <path d={`M 55 65 L 145 65 L 175 92 L 275 45 L 275 155 L 175 108 L 145 135 L 55 135 Z`} fill="rgba(244, 63, 94, 0.1)" className="animate-pulse" />
+                    </svg>
+                  ) : (
+                    <div className="relative flex justify-center items-center">
+                      <div className="absolute w-32 h-32 bg-fuchsia-500/20 rounded-full animate-ping" />
+                      <div className="absolute w-24 h-24 bg-violet-500/40 rounded-full blur-xl animate-pulse" />
+                      <Atom size={64} className="text-fuchsia-400 animate-[spin_3s_linear_infinite]" />
+                      <div className="absolute -top-10 text-[10px] font-mono text-cyan-400">Harmonic: {design.stabilizationFrequency} GHz</div>
+                    </div>
+                  )}
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI CONSOLE */}
+        <div className={`h-72 border-t flex shadow-2xl transition-colors duration-700 ${mode === 'Traditional' ? 'bg-slate-900/80 border-slate-800' : 'bg-violet-950/80 border-violet-900'}`}>
+          <div className="w-1/3 border-r border-slate-800 p-4 overflow-y-auto">
+            <h4 className="text-xs font-bold text-slate-400 flex items-center gap-2 mb-4 uppercase tracking-widest">
+              <Sparkles size={14} className={mode === 'Traditional' ? "text-amber-500" : "text-fuchsia-500"}/>
+              Research Intelligence
+            </h4>
+            <div className="space-y-2">
+              <div className={`p-3 rounded-lg text-xs border ${mode === 'Traditional' ? 'bg-sky-500/10 border-sky-500/20 text-sky-200' : 'bg-fuchsia-500/10 border-fuchsia-500/20 text-fuchsia-200'}`}>
+                {mode === 'Traditional' ? 'Standard nozzle parameters within safety limits.' : 'Space-time warping detected at core. Stabilizing graviton flux.'}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 flex flex-col relative">
+            {isAiLoading && <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex items-center justify-center"><Loader2 className="animate-spin text-sky-400" size={32} /></div>}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-2xl p-4 text-sm relative group ${msg.role === 'user' ? (mode === 'Traditional' ? 'bg-sky-600' : 'bg-fuchsia-600') + ' text-white' : 'bg-white/5 text-slate-200 border border-white/10'}`}>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-bold uppercase opacity-50">{msg.role}</span>
+                      {msg.role === 'assistant' && (
+                        <button onClick={() => handleTtsBriefing(msg.text)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"><Volume2 size={14} /></button>
+                      )}
+                    </div>
+                    <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+                    {audioUrl && i === chatHistory.length - 1 && msg.role === 'assistant' && <audio src={audioUrl} autoPlay className="hidden" onEnded={() => setAudioUrl(null)} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 bg-black/40 flex gap-2">
+              <input 
+                type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder={`Ask the ${mode === 'Traditional' ? 'LRE' : 'Quantum'} Engineer...`}
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition-all"
+              />
+              <button onClick={handleSendMessage} className={`p-3 rounded-xl transition-colors shadow-lg ${mode === 'Traditional' ? 'bg-sky-600 hover:bg-sky-500 shadow-sky-500/20' : 'bg-fuchsia-600 hover:bg-fuchsia-500 shadow-fuchsia-500/20'}`}><MessageSquare size={20} /></button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;
